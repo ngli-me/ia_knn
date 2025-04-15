@@ -14,6 +14,11 @@ This will write the executable to target/release/ia_challenge. We can then run i
 ./target/release/ia_challenge
 ```
 
+Alternatively, you can just run the development version with
+```console
+cargo run
+```
+
 After that, please input a positive integer for the facility count and RET, or just RET for a default value.
 
 Coordinates should be inputted with the following format in the range of [-10, 10] for x and y, followed by a RET

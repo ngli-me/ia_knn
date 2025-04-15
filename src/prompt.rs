@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::str::FromStr;
 
 const DEFAULT_FACILITY_COUNT: usize = 25;
@@ -29,7 +29,11 @@ impl PromptConfig {
     /// Set up the program's facility count
     pub(crate) fn get_facility_count(&self) -> usize {
         println!("Please Input A Facility Count (or press RET for a default val)");
-        match input::<String>() {
+        self.get_facility(input::<String>())
+    }
+
+    fn get_facility(&self, input: Result<String>) -> usize {
+        match input {
             Ok(input) => match input.is_empty() {
                 false => input
                     .trim()
@@ -58,7 +62,12 @@ impl PromptConfig {
             "Please Input Coordinates in the range x: ({}, {}), y: ({}, {}):",
             self.min_world_x, self.max_world_x, self.min_world_y, self.max_world_y
         );
-        match input::<String>() {
+        self.get_coordinates(input::<String>())
+    }
+
+    /// Helper function that just parses an input string
+    fn get_coordinates(&self, input: Result<String>) -> Result<(i64, i64)> {
+        match input {
             Ok(input) => {
                 let res = input.split(",").map(|c| c.trim()).collect::<Vec<&str>>();
                 Ok((res[0].parse::<i64>()?, res[1].parse::<i64>()?))
@@ -69,13 +78,31 @@ impl PromptConfig {
 }
 
 /// Function to get the user input in a more ergonomic manner
-fn input<T: FromStr>() -> Result<T, <T as FromStr>::Err> {
-    // Likely some security issues here, needs additional testing
+fn input<T: FromStr>() -> Result<T> {
     let mut input: String = String::with_capacity(64);
 
     std::io::stdin()
         .read_line(&mut input)
         .expect("Input could not be read");
 
-    input.trim().parse()
+    match input.trim().parse() {
+        Ok(val) => Ok(val),
+        Err(err) => Err(anyhow!("Input could not be parsed")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_get_facility_count() {
+        let x_val = 10;
+        let y_val = 10;
+        let p = PromptConfig::new(-x_val, x_val, -y_val, y_val);
+
+        assert_eq!(DEFAULT_FACILITY_COUNT, p.get_facility(Ok("".to_string())));
+        assert_eq!(DEFAULT_FACILITY_COUNT, p.get_facility(Ok("-25".to_string())));
+        assert_eq!(35, p.get_facility(Ok("35".to_string())));
+    }
 }
