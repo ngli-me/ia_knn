@@ -31,7 +31,10 @@ impl PromptConfig {
         println!("Please Input A Facility Count (or press RET for a default val)");
         match input::<String>() {
             Ok(input) => match input.is_empty() {
-                false => input.trim().parse::<usize>().unwrap_or(DEFAULT_FACILITY_COUNT),
+                false => input
+                    .trim()
+                    .parse::<usize>()
+                    .unwrap_or(DEFAULT_FACILITY_COUNT),
                 true => {
                     eprintln!("Empty string, using default");
                     DEFAULT_FACILITY_COUNT
@@ -46,8 +49,10 @@ impl PromptConfig {
     }
 
     /// Get the input coordinates in relative format (\[-x, x\], \[-y,y\])
-    /// Should account for white space in the result
-    /// Returns an usize, so [0...u64].
+    ///
+    /// Returns the coordinates in absolute \[0, 2 * x\], \[0, 2 * y\]
+    ///
+    /// Should account for white space in the result. Returns an usize, so [0...u64].
     pub(crate) fn get_input_coordinates(&self) -> Result<(usize, usize)> {
         println!(
             "Please Input Coordinates in the range x: ({}, {}), y: ({}, {}):",
@@ -59,12 +64,18 @@ impl PromptConfig {
                 let x = res[0].parse::<i64>()?;
                 let y = res[1].parse::<i64>()?;
 
-                if !(self.min_world_x <= x && x <= self.max_world_x) || !(self.min_world_y <= y && y <= self.max_world_y) {
+                if !(self.min_world_x <= x && x <= self.max_world_x)
+                    || !(self.min_world_y <= y && y <= self.max_world_y)
+                {
                     eprintln!("Invalid coordinates");
                     Err(anyhow::anyhow!("Invalid coordinates (not in range)"))
                 } else {
                     // Convert the coordinates back to unsigned
-                    Ok(((x + self.max_world_x) as usize, (y + self.max_world_y) as usize))
+                    println!("Closest Central Fill Facilities to ({}, {}):", x, y);
+                    Ok((
+                        (x + self.max_world_x) as usize,
+                        (y + self.max_world_y) as usize,
+                    ))
                 }
             }
             Err(err) => Err(err.into()),
