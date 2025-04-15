@@ -1,5 +1,4 @@
 use anyhow::Result;
-
 use std::str::FromStr;
 
 const DEFAULT_FACILITY_COUNT: usize = 25;
@@ -32,7 +31,7 @@ impl PromptConfig {
         println!("Please Input A Facility Count (or press RET for a default val)");
         match input::<String>() {
             Ok(input) => match input.is_empty() {
-                false => input.trim().parse::<usize>()?,
+                false => input.trim().parse::<usize>().unwrap_or(DEFAULT_FACILITY_COUNT),
                 true => {
                     eprintln!("Empty string, using default");
                     DEFAULT_FACILITY_COUNT
@@ -48,7 +47,7 @@ impl PromptConfig {
 
     /// Get the input coordinates in relative format (\[-x, x\], \[-y,y\])
     /// Should account for white space in the result
-    /// Returns a usize, so [0..u64].
+    /// Returns an usize, so [0...u64].
     pub(crate) fn get_input_coordinates(&self) -> Result<(usize, usize)> {
         println!(
             "Please Input Coordinates in the range x: ({}, {}), y: ({}, {}):",
