@@ -41,11 +41,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     map.print();
 
     // Prompt for the first user input before entering the loop
-    let mut ret: Result<(usize, usize)> = p.get_input_coordinates();
+    let mut ret: Result<(i64, i64)> = p.get_input_coordinates();
     while ret.is_ok() {
-        let (x, y): (usize, usize) = ret.unwrap();
+        let (x, y): (i64, i64) = ret?;
 
-        map.knn(config.k, x, y);
+        // Validating the bounds here, so we can reprompt if needed.
+        if !(-x_val <= x && x <= x_val) || !(-y_val <= y && y <= y_val) {
+            println!("Invalid Coordinates (Out Of Bounds)");
+        } else {
+            println!("Closest Central Fill Facilities To ({}, {}):", x, y);
+            // Convert the coordinates back to unsigned, then calculate KNN
+            map.knn(config.k, (x + x_val) as usize, (y + y_val) as usize)
+        }
         ret = p.get_input_coordinates();
     }
 

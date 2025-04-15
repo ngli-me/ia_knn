@@ -36,6 +36,8 @@ information somehow.
 
 Facility ID's should be unique.
 
+I should match the formatting given in the example.
+
 Upon revisiting the problem statement, it states that 
 
     "Each central fill facility has different medications (A, B, C) as Inventory"
@@ -45,6 +47,8 @@ Upon revisiting the problem statement, it states that
 
 This indicates to me that each Central Fill Facility should have a price for all 3 medications. I had assumed prior that
 each one could only hold one medication. Modified the code for this behavior.
+
+If the input is out of bounds, the program should prompt the user for another value.
 
 # Initial Thoughts
 
@@ -70,7 +74,8 @@ So, this will be the approach I take.
 
 > What if the user inputs a coordinate out of bounds? What about other types of inputs?
 
-The program will display a relevant error message, and exit.
+The program will display a relevant error message, and exit. If the input is out of bounds, the program should prompt
+the user for another value.
 
 > Double check the bounds of the program, [-10, 10] should work.
 

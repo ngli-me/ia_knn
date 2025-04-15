@@ -42,6 +42,8 @@ impl FacilityMap {
             hm.get(&scramble[count]).unwrap().print();
         }
 
+        println!();
+
         FacilityMap {
             location,
             hm,

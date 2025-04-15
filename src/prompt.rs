@@ -53,7 +53,7 @@ impl PromptConfig {
     /// Returns the coordinates in absolute \[0, 2 * x\], \[0, 2 * y\]
     ///
     /// Should account for white space in the result. Returns an usize, so [0...u64].
-    pub(crate) fn get_input_coordinates(&self) -> Result<(usize, usize)> {
+    pub(crate) fn get_input_coordinates(&self) -> Result<(i64, i64)> {
         println!(
             "Please Input Coordinates in the range x: ({}, {}), y: ({}, {}):",
             self.min_world_x, self.max_world_x, self.min_world_y, self.max_world_y
@@ -61,22 +61,7 @@ impl PromptConfig {
         match input::<String>() {
             Ok(input) => {
                 let res = input.split(",").map(|c| c.trim()).collect::<Vec<&str>>();
-                let x = res[0].parse::<i64>()?;
-                let y = res[1].parse::<i64>()?;
-
-                if !(self.min_world_x <= x && x <= self.max_world_x)
-                    || !(self.min_world_y <= y && y <= self.max_world_y)
-                {
-                    eprintln!("Invalid coordinates");
-                    Err(anyhow::anyhow!("Invalid coordinates (not in range)"))
-                } else {
-                    // Convert the coordinates back to unsigned
-                    println!("Closest Central Fill Facilities to ({}, {}):", x, y);
-                    Ok((
-                        (x + self.max_world_x) as usize,
-                        (y + self.max_world_y) as usize,
-                    ))
-                }
+                Ok((res[0].parse::<i64>()?, res[1].parse::<i64>()?))
             }
             Err(err) => Err(err.into()),
         }
