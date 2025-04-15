@@ -1,18 +1,31 @@
 # Instructions
 
-Set up the rust toolchain installer, and cargo.
+Set up the rust toolchain installer, and cargo. See the following link for more instructions.
 https://www.rust-lang.org/tools/install
+
+To build the target for release, enter the command.
 
 ```console
 cargo build --release
 ```
 
-This will write the executable to target/release/ia_challenge. We can then run it with
+This will write the executable to target/release/ia_challenge. We can then run it from `ia_challenge/` with
 ```console
 ./target/release/ia_challenge
 ```
 
-## Assumptions
+After that, please input a positive integer for the facility count and RET, or just RET for a default value.
+
+Coordinates should be inputted with the following format in the range of [-10, 10] for x and y, followed by a RET
+
+ex:
+```console
+-5,10
+```
+
+To end the program, just enter RET.
+
+# Assumptions
 
 Looks like there are no guidelines on how many facilities to generate, I'll add it as user input. I can reuse some code
 this way, and I will design it to be relatively easy to swap out for an environment variable or compile-time
@@ -21,9 +34,17 @@ constant.
 The example prompt doesn't really indicate the facility locations either, so it would be good to tell the user that
 information somehow.
 
-Facility ID's probably should be unique.
+Facility ID's should be unique.
 
-While I should manually test the code, writing unit tests and such seems a bit overkill for a demo.
+Upon revisiting the problem statement, it states that 
+
+    "Each central fill facility has different medications (A, B, C) as Inventory"
+
+    ...returns a list of the three closest central fill facilities, along with the 
+    cheapest medication price for each central fill
+
+This indicates to me that each Central Fill Facility should have a price for all 3 medications. I had assumed prior that
+each one could only hold one medication. Modified the code for this behavior.
 
 # Initial Thoughts
 
@@ -45,6 +66,30 @@ However, our selection space is only [-10,10], which means at most O(400 * 3) co
 parallelized. For a smaller selection like this, it might be faster to do it directly. 
 So, this will be the approach I take.
 
+## Edge Cases
+
+> What if the user inputs a coordinate out of bounds? What about other types of inputs?
+
+The program will display a relevant error message, and exit.
+
+> Double check the bounds of the program, [-10, 10] should work.
+
+> What if there are multiple facilities of the same distance?
+
+Currently, the behavior depends on the `HashMap` keys ordering (in this case the index). This is randomly ordered. If
+ordering is important/deterministic, we can use a `BTreeMap`, which will give ordering to the keys.
+
+> What if a Facility contains 2 equal medication costs?
+
+This behavior depends on how `PartialOrd` is implemented for `f64`, since comparing floats is weird. I am not sure on the 
+exact behavior, but I would imagine it defaults to `self`, which would be the first medication type by order.
+
+> What if our random seeding algorithm creates a collision?
+
+We can either increase the runtime, by re-reunning and checking for collisions, or choose a different generation method.
+I chose a generation method with no collisions, which is getting a list of all the indices, and randomly shuffling them.
+For this problem, I think this approach works best, given the space constraints.
+
 # Improvements
 
 > Provide a brief summary of how you might change your program if you needed to support multiple central fills at the
@@ -59,6 +104,30 @@ Then, when we pop elements off of the `PriorityQueue`, we can just keep a runnin
 If the world size was significantly larger, there are some optimizations we can do such as implementing a k-d tree, 
 or adding locality sensitive hashing. However, these approaches are more difficult to maintain.
 
-Past a certain point, we can keep the setup, but I would use something like `PostgreSQL` and leverage the spatial query
-abilities to solve for the nearest neighbors. In this case, we can remove the `knn()` function, and replace it with the
-database connection.
+Past a certain point depending on the system memory, we can keep the setup, but I would use something like `PostgreSQL` 
+and leverage the spatial query  abilities to solve for the nearest neighbors. In this case, we can remove the `knn()` 
+function, and replace it with the database connection, and run a query to find knn.
+
+Assuming the same problem statement, the DB would look something like this 
+
+```postgresql
+CREATE TABLE medication_type (
+  id serial PRIMARY KEY,
+  name varchar
+);
+
+CREATE TABLE distance (
+  id serial PRIMARY KEY,
+  loc point
+);
+
+CREATE TABLE facilities (
+  id serial PRIMARY KEY references distance,
+  inventory numeric(10,5)[],
+  price numeric(10, 5),
+  medication_type serial references medication_type(id)
+);
+```
+
+Then, you can create a spatial index on the `distance` table, and select knn. There is some more normalization possible
+with facilities, but I am leaving it to preserve the relative logic in the current implementation.

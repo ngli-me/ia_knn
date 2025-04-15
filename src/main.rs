@@ -29,7 +29,6 @@ fn default_k() -> usize {
 fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv().ok();
     let config = envy::from_env::<Config>().unwrap();
-    println!("{} {}", config.world_x, config.world_y);
 
     // Initialize the relative coordinates for the prompt
     let x_val = ((config.world_x - 1) / 2) as i64;
