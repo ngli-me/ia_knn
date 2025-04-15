@@ -16,7 +16,6 @@ pub struct FacilityMap {
     hm: HashMap<usize, Facility>,
     x_bound: usize,
     y_bound: usize,
-    size: usize,
 }
 
 impl FacilityMap {
@@ -47,7 +46,6 @@ impl FacilityMap {
             hm,
             x_bound,
             y_bound,
-            size,
         }
     }
 
@@ -76,9 +74,17 @@ impl FacilityMap {
     }
 
     pub(crate) fn print(&self) {
+        let mut axis_label = -(self.x_bound as i64) / 2;
+        while axis_label < ((self.x_bound as i64) / 2) + 1 {
+            print!("{:4}", axis_label);
+            axis_label += 1;
+        }
+        println!();
+        println!();
+
         let mut count: usize = 1;
         for val in &self.location {
-            print!("{:4} ", val);
+            print!("{:4}", val);
             if count % self.x_bound == 0 {
                 println!();
             }
@@ -94,7 +100,7 @@ pub struct Facility {
 }
 
 impl Facility {
-    fn new(id: usize, mut rng: &mut ThreadRng) -> Facility {
+    fn new(id: usize, rng: &mut ThreadRng) -> Facility {
         let inventory = rng.random::<MedicationType>();
         let price = rng.random::<f64>();
         Facility {

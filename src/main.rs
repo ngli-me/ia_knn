@@ -45,7 +45,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut ret: Result<(usize, usize)> = p.get_input_coordinates();
     while ret.is_ok() {
         let (x, y): (usize, usize) = ret.unwrap();
-        println!("retrieved x,y {} {}", x, y);
 
         map.knn(config.k, x, y);
         ret = p.get_input_coordinates();
